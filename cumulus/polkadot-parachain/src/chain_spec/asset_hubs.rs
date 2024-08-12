@@ -15,28 +15,23 @@
 // along with Cumulus.  If not, see <http://www.gnu.org/licenses/>.
 
 use crate::chain_spec::{
-	get_account_id_from_seed, get_collator_keys_from_seed, Extensions, GenericChainSpec,
-	SAFE_XCM_VERSION,
+	Extensions, GenericChainSpec,
 };
 use asset_hub_rococo_runtime::genesis_config_presets::{
 	asset_hub_rococo_development_genesis, asset_hub_rococo_genesis,
 	asset_hub_rococo_local_testnet_genesis,
 };
-use cumulus_primitives_core::ParaId;
+use asset_hub_westend_runtime::genesis_config_presets::{
+	asset_hub_westend_development_genesis, asset_hub_westend_genesis,
+	asset_hub_westend_local_testnet_genesis,
+};
 use hex_literal::hex;
-use parachains_common::{AccountId, AuraId, Balance as AssetHubBalance};
+use parachains_common::{Balance as AssetHubBalance};
 use sc_service::ChainType;
-use sp_core::{crypto::UncheckedInto, sr25519};
+use sp_core::crypto::UncheckedInto;
 
 const ASSET_HUB_WESTEND_ED: AssetHubBalance = asset_hub_westend_runtime::ExistentialDeposit::get();
 const ASSET_HUB_ROCOCO_ED: AssetHubBalance = asset_hub_rococo_runtime::ExistentialDeposit::get();
-
-/// Generate the session keys from individual elements.
-///
-/// The input must be a tuple of individual keys (a single arg for now since we have just one key).
-pub fn asset_hub_westend_session_keys(keys: AuraId) -> asset_hub_westend_runtime::SessionKeys {
-	asset_hub_westend_runtime::SessionKeys { aura: keys }
-}
 
 pub fn asset_hub_westend_development_config() -> GenericChainSpec {
 	let mut properties = sc_chain_spec::Properties::new();
@@ -51,21 +46,7 @@ pub fn asset_hub_westend_development_config() -> GenericChainSpec {
 	.with_name("Westend Asset Hub Development")
 	.with_id("asset-hub-westend-dev")
 	.with_chain_type(ChainType::Local)
-	.with_genesis_config_patch(asset_hub_westend_genesis(
-		// initial collators.
-		vec![(
-			get_account_id_from_seed::<sr25519::Public>("Alice"),
-			get_collator_keys_from_seed::<AuraId>("Alice"),
-		)],
-		vec![
-			get_account_id_from_seed::<sr25519::Public>("Alice"),
-			get_account_id_from_seed::<sr25519::Public>("Bob"),
-			get_account_id_from_seed::<sr25519::Public>("Alice//stash"),
-			get_account_id_from_seed::<sr25519::Public>("Bob//stash"),
-		],
-		testnet_parachains_constants::westend::currency::UNITS * 1_000_000,
-		1000.into(),
-	))
+	.with_genesis_config_patch(asset_hub_westend_development_genesis(1000.into()))
 	.with_properties(properties)
 	.build()
 }
@@ -83,35 +64,7 @@ pub fn asset_hub_westend_local_config() -> GenericChainSpec {
 	.with_name("Westend Asset Hub Local")
 	.with_id("asset-hub-westend-local")
 	.with_chain_type(ChainType::Local)
-	.with_genesis_config_patch(asset_hub_westend_genesis(
-		// initial collators.
-		vec![
-			(
-				get_account_id_from_seed::<sr25519::Public>("Alice"),
-				get_collator_keys_from_seed::<AuraId>("Alice"),
-			),
-			(
-				get_account_id_from_seed::<sr25519::Public>("Bob"),
-				get_collator_keys_from_seed::<AuraId>("Bob"),
-			),
-		],
-		vec![
-			get_account_id_from_seed::<sr25519::Public>("Alice"),
-			get_account_id_from_seed::<sr25519::Public>("Bob"),
-			get_account_id_from_seed::<sr25519::Public>("Charlie"),
-			get_account_id_from_seed::<sr25519::Public>("Dave"),
-			get_account_id_from_seed::<sr25519::Public>("Eve"),
-			get_account_id_from_seed::<sr25519::Public>("Ferdie"),
-			get_account_id_from_seed::<sr25519::Public>("Alice//stash"),
-			get_account_id_from_seed::<sr25519::Public>("Bob//stash"),
-			get_account_id_from_seed::<sr25519::Public>("Charlie//stash"),
-			get_account_id_from_seed::<sr25519::Public>("Dave//stash"),
-			get_account_id_from_seed::<sr25519::Public>("Eve//stash"),
-			get_account_id_from_seed::<sr25519::Public>("Ferdie//stash"),
-		],
-		testnet_parachains_constants::westend::currency::UNITS * 1_000_000,
-		1000.into(),
-	))
+	.with_genesis_config_patch(asset_hub_westend_local_testnet_genesis(1000))
 	.with_properties(properties)
 	.build()
 }
@@ -159,45 +112,6 @@ pub fn asset_hub_westend_config() -> GenericChainSpec {
 	))
 	.with_properties(properties)
 	.build()
-}
-
-fn asset_hub_westend_genesis(
-	invulnerables: Vec<(AccountId, AuraId)>,
-	endowed_accounts: Vec<AccountId>,
-	endowment: AssetHubBalance,
-	id: ParaId,
-) -> serde_json::Value {
-	serde_json::json!({
-		"balances": {
-			"balances": endowed_accounts
-				.iter()
-				.cloned()
-				.map(|k| (k, endowment))
-				.collect::<Vec<_>>(),
-		},
-		"parachainInfo": {
-			"parachainId": id,
-		},
-		"collatorSelection": {
-			"invulnerables": invulnerables.iter().cloned().map(|(acc, _)| acc).collect::<Vec<_>>(),
-			"candidacyBond": ASSET_HUB_WESTEND_ED * 16,
-		},
-		"session": {
-			"keys": invulnerables
-				.into_iter()
-				.map(|(acc, aura)| {
-					(
-						acc.clone(),                          // account id
-						acc,                                  // validator id
-						asset_hub_westend_session_keys(aura), // session keys
-					)
-				})
-				.collect::<Vec<_>>(),
-		},
-		"polkadotXcm": {
-			"safeXcmVersion": Some(SAFE_XCM_VERSION),
-		},
-	})
 }
 
 pub fn asset_hub_rococo_development_config() -> GenericChainSpec {
