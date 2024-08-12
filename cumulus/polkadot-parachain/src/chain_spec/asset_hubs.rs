@@ -14,9 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Cumulus.  If not, see <http://www.gnu.org/licenses/>.
 
-use crate::chain_spec::{
-	Extensions, GenericChainSpec,
-};
+use crate::chain_spec::{Extensions, GenericChainSpec};
 use asset_hub_rococo_runtime::genesis_config_presets::{
 	asset_hub_rococo_development_genesis, asset_hub_rococo_genesis,
 	asset_hub_rococo_local_testnet_genesis,
@@ -26,7 +24,7 @@ use asset_hub_westend_runtime::genesis_config_presets::{
 	asset_hub_westend_local_testnet_genesis,
 };
 use hex_literal::hex;
-use parachains_common::{Balance as AssetHubBalance};
+use parachains_common::Balance as AssetHubBalance;
 use sc_service::ChainType;
 use sp_core::crypto::UncheckedInto;
 
@@ -37,16 +35,17 @@ pub fn asset_hub_westend_development_config() -> GenericChainSpec {
 	let mut properties = sc_chain_spec::Properties::new();
 	properties.insert("tokenSymbol".into(), "WND".into());
 	properties.insert("tokenDecimals".into(), 12.into());
+	let para_id = 1000;
 
 	GenericChainSpec::builder(
 		asset_hub_westend_runtime::WASM_BINARY
 			.expect("WASM binary was not built, please build it!"),
-		Extensions { relay_chain: "westend".into(), para_id: 1000 },
+		Extensions { relay_chain: "westend".into(), para_id },
 	)
 	.with_name("Westend Asset Hub Development")
 	.with_id("asset-hub-westend-dev")
 	.with_chain_type(ChainType::Local)
-	.with_genesis_config_patch(asset_hub_westend_development_genesis(1000.into()))
+	.with_genesis_config_patch(asset_hub_westend_development_genesis(para_id.into()))
 	.with_properties(properties)
 	.build()
 }
@@ -55,16 +54,17 @@ pub fn asset_hub_westend_local_config() -> GenericChainSpec {
 	let mut properties = sc_chain_spec::Properties::new();
 	properties.insert("tokenSymbol".into(), "WND".into());
 	properties.insert("tokenDecimals".into(), 12.into());
+	let para_id = 1000;
 
 	GenericChainSpec::builder(
 		asset_hub_westend_runtime::WASM_BINARY
 			.expect("WASM binary was not built, please build it!"),
-		Extensions { relay_chain: "westend-local".into(), para_id: 1000 },
+		Extensions { relay_chain: "westend-local".into(), para_id },
 	)
 	.with_name("Westend Asset Hub Local")
 	.with_id("asset-hub-westend-local")
 	.with_chain_type(ChainType::Local)
-	.with_genesis_config_patch(asset_hub_westend_local_testnet_genesis(1000))
+	.with_genesis_config_patch(asset_hub_westend_local_testnet_genesis(para_id.into()))
 	.with_properties(properties)
 	.build()
 }

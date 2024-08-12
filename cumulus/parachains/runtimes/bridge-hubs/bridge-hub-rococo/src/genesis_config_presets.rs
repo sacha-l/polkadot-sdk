@@ -13,28 +13,26 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-//! Genesis configs presets for the AssetHubRococo runtime
+//! Genesis configs presets for the BridgeHubRococo runtime
 
 use crate::*;
+use sp_core::sr25519;
 use sp_std::vec::Vec;
-use testnet_parachains_constants::{genesis_presets::*, rococo::currency::UNITS as ROC};
+use testnet_parachains_constants::genesis_presets::*;
 
-const ASSET_HUB_ROCOCO_ED: Balance = ExistentialDeposit::get();
+const BRIDGE_HUB_ROCOCO_ED: Balance = ExistentialDeposit::get();
 
-/// Default genesis pallet configurations for AssetHubRococo
-pub fn asset_hub_rococo_genesis(
+/// Default genesis pallet configurations for BridgeHubRococo
+pub fn bridge_hub_rococo_genesis(
 	invulnerables: Vec<(AccountId, AuraId)>,
 	endowed_accounts: Vec<AccountId>,
-	endowment: Balance,
 	id: ParaId,
+	bridges_pallet_owner: Option<AccountId>,
+	asset_hub_para_id: ParaId,
 ) -> serde_json::Value {
 	serde_json::json!({
 		"balances": BalancesConfig {
-			balances: endowed_accounts
-				.iter()
-				.cloned()
-				.map(|k| (k, endowment))
-				.collect(),
+			balances: endowed_accounts.iter().cloned().map(|k| (k, 1u128 << 60)).collect::<Vec<_>>(),
 		},
 		"parachainInfo": ParachainInfoConfig {
 			parachain_id: id,
@@ -42,7 +40,7 @@ pub fn asset_hub_rococo_genesis(
 		},
 		"collatorSelection": CollatorSelectionConfig {
 			invulnerables: invulnerables.iter().cloned().map(|(acc, _)| acc).collect(),
-			candidacy_bond: ASSET_HUB_ROCOCO_ED * 16,
+			candidacy_bond: BRIDGE_HUB_ROCOCO_ED * 16,
 			..Default::default()
 		},
 		"session": SessionConfig {
@@ -61,30 +59,66 @@ pub fn asset_hub_rococo_genesis(
 		"polkadotXcm": PolkadotXcmConfig {
 			safe_xcm_version: Some(SAFE_XCM_VERSION),
 			..Default::default()
+		},
+		"bridgeWestendGrandpa": BridgeWestendGrandpaConfig {
+			owner: bridges_pallet_owner.clone(),
+			..Default::default()
+		},
+		"bridgeWestendMessages": BridgeWestendMessagesConfig {
+			owner: bridges_pallet_owner.clone(),
+			..Default::default()
+		},
+		"ethereumSystem": EthereumSystemConfig {
+			para_id: id,
+			asset_hub_para_id,
+			..Default::default()
 		}
 	})
 }
 
 /// Default genesis setup for `local_testnet` preset id.
-pub fn asset_hub_rococo_local_testnet_genesis(para_id: ParaId) -> serde_json::Value {
-	asset_hub_rococo_genesis(test_invulnerables(), testnet_accounts(), ROC * 1_000_000, para_id)
+pub fn bridge_hub_rococo_local_testnet_genesis(
+	para_id: ParaId,
+	bridges_pallet_owner: Option<AccountId>,
+	asset_hub_para_id: ParaId,
+) -> serde_json::Value {
+	bridge_hub_rococo_genesis(
+		test_invulnerables(),
+		testnet_accounts(),
+		para_id,
+		bridges_pallet_owner,
+		asset_hub_para_id,
+	)
 }
 
 /// Default genesis setup for `development` preset id.
-pub fn asset_hub_rococo_development_genesis(para_id: ParaId) -> serde_json::Value {
-	asset_hub_rococo_genesis(
-		test_invulnerables_short_list(),
-		testnet_accounts_short_list(),
-		ROC * 1_000_000,
+pub fn bridge_hub_rococo_development_genesis(
+	para_id: ParaId,
+	bridges_pallet_owner: Option<AccountId>,
+	asset_hub_para_id: ParaId,
+) -> serde_json::Value {
+	bridge_hub_rococo_genesis(
+		test_invulnerables(),
+		testnet_accounts(),
 		para_id,
+		bridges_pallet_owner,
+		asset_hub_para_id,
 	)
 }
 
 /// Provides the JSON representation of predefined genesis config for given `id`.
 pub fn get_preset(id: &sp_genesis_builder::PresetId) -> Option<sp_std::vec::Vec<u8>> {
 	let patch = match id.try_into() {
-		Ok("development") => asset_hub_rococo_development_genesis(1000.into()),
-		Ok("local_testnet") => asset_hub_rococo_local_testnet_genesis(1000.into()),
+		Ok("development") => bridge_hub_rococo_development_genesis(
+			1013.into(),
+			Some(get_account_id_from_seed::<sr25519::Public>("Bob")),
+			rococo_runtime_constants::system_parachain::ASSET_HUB_ID.into(),
+		),
+		Ok("local_testnet") => bridge_hub_rococo_local_testnet_genesis(
+			1013.into(),
+			Some(get_account_id_from_seed::<sr25519::Public>("Bob")),
+			rococo_runtime_constants::system_parachain::ASSET_HUB_ID.into(),
+		),
 		_ => return None,
 	};
 	Some(

@@ -2148,6 +2148,7 @@ dependencies = [
  "rococo-runtime-constants",
  "scale-info",
  "serde",
+ "serde_json",
  "snowbridge-beacon-primitives",
  "snowbridge-core",
  "snowbridge-outbound-queue-runtime-api",

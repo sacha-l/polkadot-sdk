@@ -596,8 +596,9 @@ pub mod pallet {
 		pub operating_mode: MessagesOperatingMode,
 		/// Initial pallet owner.
 		pub owner: Option<T::AccountId>,
+		#[serde(skip)]
 		/// Dummy marker.
-		pub phantom: sp_std::marker::PhantomData<I>,
+		pub _config: sp_std::marker::PhantomData<I>,
 	}
 
 	#[pallet::genesis_build]
