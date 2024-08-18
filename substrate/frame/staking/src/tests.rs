@@ -1041,7 +1041,7 @@ fn cannot_reserve_staked_balance() {
 		// Confirm account 11 (via controller 10) is totally staked
 		assert_eq!(Staking::eras_stakers(active_era(), &11).own, 1000);
 		// Confirm account 11 cannot reserve as a result
-		assert_noop!(Balances::reserve(&11, 1), BalancesError::<Test, _>::LiquidityRestrictions);
+		assert_noop!(Balances::reserve(&11, 1), BalancesError::<Test, _>::InsufficientBalance);
 
 		// Give account 11 extra free balance
 		let _ = asset::set_balance::<Test>(&11, 10000);

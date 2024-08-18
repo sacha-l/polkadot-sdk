@@ -4,7 +4,7 @@ use frame_support::traits::{
 	fungible::{
 		hold::{Balanced as FunHoldBalanced, Inspect as FunHoldInspect, Mutate as FunHoldMutate},
 		Balanced, Inspect as FunInspect, Mutate as FunMutate,
-	},
+	}, Imbalance,
 	tokens::Precision,
 	Currency, InspectLockableCurrency, LockableCurrency,
 };
@@ -27,7 +27,8 @@ pub fn set_balance<T: Config>(who: &T::AccountId, value: BalanceOf<T>) {
 }
 
 pub fn burn<T: Config>(amount: BalanceOf<T>) -> PositiveImbalanceOf<T> {
-	T::Currency::burn(amount)
+	// FIXME(ank4n) T::Fungible::burn(amount)
+	Default::default()
 }
 
 /// Stakeable balance. Includes already staked + free to stake.
@@ -71,7 +72,7 @@ pub fn slash<T: Config>(
 	who: &T::AccountId,
 	value: BalanceOf<T>,
 ) -> (NegativeImbalanceOf<T>, BalanceOf<T>) {
-	T::Currency::slash(who, value)
+	T::Fungible::slash(&HoldReason::Staking.into(), who, value)
 }
 
 /// Mint reward into an existing account. Does not increase the total issuance.
@@ -79,20 +80,20 @@ pub fn mint_existing<T: Config>(
 	who: &T::AccountId,
 	value: BalanceOf<T>,
 ) -> Option<PositiveImbalanceOf<T>> {
-	T::Currency::deposit_into_existing(who, value).ok()
+	T::Fungible::deposit(who, value, Precision::Exact).ok()
 }
 
 /// Mint reward and create if account does not exist. Does not increase the total issuance.
 pub fn mint_creating<T: Config>(who: &T::AccountId, value: BalanceOf<T>) -> PositiveImbalanceOf<T> {
-	T::Currency::deposit_creating(who, value)
+	T::Fungible::deposit(who, value, Precision::Exact).unwrap_or_default()
 }
 
 /// Deposit to who from slashed value.
 pub fn deposit_slashed<T: Config>(who: &T::AccountId, value: NegativeImbalanceOf<T>) {
-	T::Currency::resolve_creating(who, value)
+	let _ = T::Fungible::resolve(who, value);
 }
 
 /// Increases total issuance.
 pub fn issue<T: Config>(value: BalanceOf<T>) -> NegativeImbalanceOf<T> {
-	T::Currency::issue(value)
+	T::Fungible::issue(value)
 }
