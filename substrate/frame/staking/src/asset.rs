@@ -4,31 +4,34 @@ use frame_support::traits::{
 	fungible::{
 		hold::{Balanced as FunHoldBalanced, Inspect as FunHoldInspect, Mutate as FunHoldMutate},
 		Balanced, Inspect as FunInspect, Mutate as FunMutate,
-	},
+	}, tokens::Precision,
 	Currency, InspectLockableCurrency, LockableCurrency,
 };
+use sp_runtime::{traits::Zero, DispatchResult};
 
-use crate::{BalanceOf, Config, HoldReason, NegativeImbalanceOf, PositiveImbalanceOf};
+use crate::{BalanceOf, Config, HoldReason, Error, NegativeImbalanceOf, PositiveImbalanceOf};
 
 /// Existential deposit for the chain.
 pub fn existential_deposit<T: Config>() -> BalanceOf<T> {
-	T::Currency::minimum_balance()
+	T::Fungible::minimum_balance()
 }
 
 pub fn total_issuance<T: Config>() -> BalanceOf<T> {
-	T::Currency::total_issuance()
+	T::Fungible::total_issuance()
 }
 
 pub fn set_balance<T: Config>(who: &T::AccountId, value: BalanceOf<T>) {
-	T::Currency::make_free_balance_be(who, value);
+	T::Fungible::set_balance(who, value);
 }
 
 pub fn burn<T: Config>(amount: BalanceOf<T>) -> PositiveImbalanceOf<T> {
 	T::Currency::burn(amount)
 }
 
+/// Stakeable balance. Includes already staked + free to stake.
 pub fn free_balance<T: Config>(who: &T::AccountId) -> BalanceOf<T> {
-	T::Currency::free_balance(who)
+	// T::Currency::free_balance(who)
+	T::Fungible::balance(who) + T::Fungible::balance_on_hold(&HoldReason::Staking.into(), who)
 }
 
 pub fn total_balance<T: Config>(who: &T::AccountId) -> BalanceOf<T> {
@@ -41,17 +44,29 @@ pub fn staked<T: Config>(who: &T::AccountId) -> BalanceOf<T> {
 		T::Fungible::balance_on_hold(&HoldReason::Staking.into(), who)
 }
 
-pub fn update_stake<T: Config>(who: &T::AccountId, amount: BalanceOf<T>) {
-	T::Currency::set_lock(
-		crate::STAKING_ID,
-		who,
-		amount,
-		frame_support::traits::WithdrawReasons::all(),
-	);
+pub fn update_stake<T: Config>(who: &T::AccountId, amount: BalanceOf<T>) -> DispatchResult {
+	// if first stake, inc provider.
+	if staked::<T>(who) == Zero::zero() && amount > Zero::zero() {
+		frame_system::Pallet::<T>::inc_providers(who);
+	}
+
+	T::Fungible::set_on_hold(&HoldReason::Staking.into(), who, amount)
+	// T::Currency::set_lock(
+	// 	crate::STAKING_ID,
+	// 	who,
+	// 	amount,
+	// 	frame_support::traits::WithdrawReasons::all(),
+	// );
 }
 
-pub fn kill_stake<T: Config>(who: &T::AccountId) {
-	T::Currency::remove_lock(crate::STAKING_ID, who);
+pub fn kill_stake<T: Config>(who: &T::AccountId) -> DispatchResult {
+	frame_system::Pallet::<T>::dec_providers(who)?;
+	T::Fungible::release_all(
+		&HoldReason::Staking.into(),
+		who,
+		Precision::BestEffort,
+	).map(|_| ())
+	// T::Currency::remove_lock(crate::STAKING_ID, who);
 }
 
 pub fn slash<T: Config>(

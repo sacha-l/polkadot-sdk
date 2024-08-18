@@ -2118,7 +2118,7 @@ pub mod pallet {
 					let new_total = if let Some(total) = maybe_total {
 						let new_total = total.min(stash_balance);
 						// enforce lock == ledger.amount.
-						asset::update_stake::<T>(&stash, new_total);
+						asset::update_stake::<T>(&stash, new_total)?;
 						new_total
 					} else {
 						current_lock
@@ -2145,13 +2145,13 @@ pub mod pallet {
 					// to enforce a new ledger.total and staking lock for this stash.
 					let new_total =
 						maybe_total.ok_or(Error::<T>::CannotRestoreLedger)?.min(stash_balance);
-					asset::update_stake::<T>(&stash, new_total);
+					asset::update_stake::<T>(&stash, new_total)?;
 
 					Ok((stash.clone(), new_total))
 				},
 				Err(Error::<T>::BadState) => {
 					// the stash and ledger do not exist but lock is lingering.
-					asset::kill_stake::<T>(&stash);
+					asset::kill_stake::<T>(&stash)?;
 					ensure!(
 						Self::inspect_bond_state(&stash) == Err(Error::<T>::NotStash),
 						Error::<T>::BadState
