@@ -1,8 +1,14 @@
 //! Facade of currency implementation. Useful while migrating from old to new currency system.
 
-use frame_support::traits::{Currency, InspectLockableCurrency, LockableCurrency};
+use frame_support::traits::{
+	fungible::{
+		hold::{Balanced as FunHoldBalanced, Inspect as FunHoldInspect, Mutate as FunHoldMutate},
+		Balanced, Inspect as FunInspect, Mutate as FunMutate,
+	},
+	Currency, InspectLockableCurrency, LockableCurrency,
+};
 
-use crate::{BalanceOf, Config, NegativeImbalanceOf, PositiveImbalanceOf};
+use crate::{BalanceOf, Config, HoldReason, NegativeImbalanceOf, PositiveImbalanceOf};
 
 /// Existential deposit for the chain.
 pub fn existential_deposit<T: Config>() -> BalanceOf<T> {
@@ -31,7 +37,8 @@ pub fn total_balance<T: Config>(who: &T::AccountId) -> BalanceOf<T> {
 
 /// Balance that is staked and at stake.
 pub fn staked<T: Config>(who: &T::AccountId) -> BalanceOf<T> {
-	T::Currency::balance_locked(crate::STAKING_ID, who)
+	T::Currency::balance_locked(crate::STAKING_ID, who) +
+		T::Fungible::balance_on_hold(&HoldReason::Staking.into(), who)
 }
 
 pub fn update_stake<T: Config>(who: &T::AccountId, amount: BalanceOf<T>) {
