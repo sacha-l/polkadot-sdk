@@ -63,7 +63,7 @@ pub fn update_stake<T: Config>(who: &T::AccountId, amount: BalanceOf<T>) -> Disp
 }
 
 pub fn kill_stake<T: Config>(who: &T::AccountId) -> DispatchResult {
-	frame_system::Pallet::<T>::dec_providers(who)?;
+	let _ = frame_system::Pallet::<T>::dec_providers(who);
 	T::Fungible::release_all(&HoldReason::Staking.into(), who, Precision::BestEffort).map(|_| ())
 	// T::Currency::remove_lock(crate::STAKING_ID, who);
 }

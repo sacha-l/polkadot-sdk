@@ -2809,8 +2809,8 @@ fn garbage_collection_after_slashing() {
 			// validator and nominator slash in era are garbage-collected by era change,
 			// so we don't test those here.
 
-			assert_eq!(asset::free_balance::<Test>(&11), 2);
-			assert_eq!(asset::total_balance::<Test>(&11), 2);
+			assert_eq!(asset::free_balance::<Test>(&11), 0);
+			assert_eq!(asset::total_balance::<Test>(&11), 0);
 
 			let slashing_spans = SlashingSpans::<Test>::get(&11).unwrap();
 			assert_eq!(slashing_spans.iter().count(), 2);
