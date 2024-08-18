@@ -25,6 +25,13 @@ use frame_election_provider_support::{
 use frame_support::{
 	pallet_prelude::*,
 	traits::{
+		fungible::{
+			hold::{
+				Balanced as FunHoldBalanced, Inspect as FunHoldInspect, Mutate as FunHoldMutate,
+			},
+			Balanced, Inspect as FunInspect, Mutate as FunMutate,
+		},
+		tokens::Precision,
 		Defensive, DefensiveSaturating, EnsureOrigin, EstimateNextNewSession, Get,
 		InspectLockableCurrency, LockableCurrency, OnUnbalanced, UnixTime,
 	},
@@ -95,6 +102,19 @@ pub mod pallet {
 				Moment = BlockNumberFor<Self>,
 				Balance = Self::CurrencyBalance,
 			> + InspectLockableCurrency<Self::AccountId>;
+
+		#[pallet::no_default]
+		type Fungible: FunHoldMutate<
+				Self::AccountId,
+				Reason = Self::RuntimeHoldReason,
+				Balance = Self::CurrencyBalance,
+			> + FunMutate<Self::AccountId, Balance = Self::CurrencyBalance>
+			+ FunHoldBalanced<Self::AccountId, Balance = Self::CurrencyBalance>;
+
+		/// Overarching hold reason.
+		#[pallet::no_default_bounds]
+		type RuntimeHoldReason: From<HoldReason>;
+
 		/// Just the `Currency::Balance` type; we have this item to allow us to constrain it to
 		/// `From<u64>`.
 		type CurrencyBalance: sp_runtime::traits::AtLeast32BitUnsigned
@@ -105,6 +125,8 @@ pub mod pallet {
 			+ Default
 			+ From<u64>
 			+ TypeInfo
+			+ Send
+			+ Sync
 			+ MaxEncodedLen;
 		/// Time used for computing era duration.
 		///
@@ -308,6 +330,14 @@ pub mod pallet {
 		type WeightInfo: WeightInfo;
 	}
 
+	/// A reason for placing a hold on funds.
+	#[pallet::composite_enum]
+	pub enum HoldReason {
+		/// Funds held for stake delegation to another account.
+		#[codec(index = 0)]
+		Staking,
+	}
+
 	/// Default implementations of [`DefaultConfig`], which can be used to implement [`Config`].
 	pub mod config_preludes {
 		use super::*;
@@ -326,6 +356,8 @@ pub mod pallet {
 		impl DefaultConfig for TestDefaultConfig {
 			#[inject_runtime_type]
 			type RuntimeEvent = ();
+			#[inject_runtime_type]
+			type RuntimeHoldReason = ();
 			type CurrencyBalance = u128;
 			type CurrencyToVote = ();
 			type NominationsQuota = crate::FixedNominationsQuota<16>;

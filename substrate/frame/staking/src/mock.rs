@@ -25,6 +25,7 @@ use frame_election_provider_support::{
 use frame_support::{
 	assert_ok, derive_impl, ord_parameter_types, parameter_types,
 	traits::{
+		fungible::{Inspect, Mutate, MutateHold},
 		ConstU64, Currency, EitherOfDiverse, FindAuthor, Get, Hooks, Imbalance, LockableCurrency,
 		OnUnbalanced, OneSessionHandler, WithdrawReasons,
 	},
@@ -264,6 +265,7 @@ pub(crate) const DISABLING_LIMIT_FACTOR: usize = 3;
 #[derive_impl(crate::config_preludes::TestDefaultConfig)]
 impl crate::pallet::pallet::Config for Test {
 	type Currency = Balances;
+	type Fungible = Balances;
 	type UnixTime = Timestamp;
 	type RewardRemainder = RewardRemainderMock;
 	type Reward = MockReward;
