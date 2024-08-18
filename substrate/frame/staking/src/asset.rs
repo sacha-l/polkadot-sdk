@@ -20,8 +20,9 @@ pub fn total_issuance<T: Config>() -> BalanceOf<T> {
 	T::Fungible::total_issuance()
 }
 
+/// Make total balance equal to value.
 pub fn set_balance<T: Config>(who: &T::AccountId, value: BalanceOf<T>) {
-	T::Fungible::set_balance(who, value);
+	T::Fungible::set_balance(who, value - T::Fungible::total_balance_on_hold(who));
 }
 
 pub fn burn<T: Config>(amount: BalanceOf<T>) -> PositiveImbalanceOf<T> {

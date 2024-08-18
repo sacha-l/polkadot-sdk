@@ -2077,7 +2077,7 @@ fn bond_with_no_staked_value() {
 			);
 			// bonded with absolute minimum value possible.
 			assert_ok!(Staking::bond(RuntimeOrigin::signed(1), 5, RewardDestination::Account(1)));
-			assert_eq!(pallet_balances::Locks::<Test>::get(&1)[0].amount, 5);
+			assert_eq!(pallet_balances::Holds::<Test>::get(&1)[0].amount, 5);
 
 			// unbonding even 1 will cause all to be unbonded.
 			assert_ok!(Staking::unbond(RuntimeOrigin::signed(1), 1));
@@ -2098,14 +2098,14 @@ fn bond_with_no_staked_value() {
 			// not yet removed.
 			assert_ok!(Staking::withdraw_unbonded(RuntimeOrigin::signed(1), 0));
 			assert!(Staking::ledger(1.into()).is_ok());
-			assert_eq!(pallet_balances::Locks::<Test>::get(&1)[0].amount, 5);
+			assert_eq!(pallet_balances::Holds::<Test>::get(&1)[0].amount, 5);
 
 			mock::start_active_era(3);
 
 			// poof. Account 1 is removed from the staking system.
 			assert_ok!(Staking::withdraw_unbonded(RuntimeOrigin::signed(1), 0));
 			assert!(Staking::ledger(1.into()).is_err());
-			assert_eq!(pallet_balances::Locks::<Test>::get(&1).len(), 0);
+			assert_eq!(pallet_balances::Holds::<Test>::get(&1).len(), 0);
 		});
 }
 
