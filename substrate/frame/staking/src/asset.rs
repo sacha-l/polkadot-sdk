@@ -4,12 +4,13 @@ use frame_support::traits::{
 	fungible::{
 		hold::{Balanced as FunHoldBalanced, Inspect as FunHoldInspect, Mutate as FunHoldMutate},
 		Balanced, Inspect as FunInspect, Mutate as FunMutate,
-	}, tokens::Precision,
+	},
+	tokens::Precision,
 	Currency, InspectLockableCurrency, LockableCurrency,
 };
 use sp_runtime::{traits::Zero, DispatchResult};
 
-use crate::{BalanceOf, Config, HoldReason, Error, NegativeImbalanceOf, PositiveImbalanceOf};
+use crate::{BalanceOf, Config, Error, HoldReason, NegativeImbalanceOf, PositiveImbalanceOf};
 
 /// Existential deposit for the chain.
 pub fn existential_deposit<T: Config>() -> BalanceOf<T> {
@@ -62,11 +63,7 @@ pub fn update_stake<T: Config>(who: &T::AccountId, amount: BalanceOf<T>) -> Disp
 
 pub fn kill_stake<T: Config>(who: &T::AccountId) -> DispatchResult {
 	frame_system::Pallet::<T>::dec_providers(who)?;
-	T::Fungible::release_all(
-		&HoldReason::Staking.into(),
-		who,
-		Precision::BestEffort,
-	).map(|_| ())
+	T::Fungible::release_all(&HoldReason::Staking.into(), who, Precision::BestEffort).map(|_| ())
 	// T::Currency::remove_lock(crate::STAKING_ID, who);
 }
 

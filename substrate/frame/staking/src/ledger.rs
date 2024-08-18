@@ -187,7 +187,8 @@ impl<T: Config> StakingLedger<T> {
 		// We skip locking virtual stakers.
 		if !Pallet::<T>::is_virtual_staker(&self.stash) {
 			// for direct stakers, update lock on stash based on ledger.
-			asset::update_stake::<T>(&self.stash, self.total).map_err(|_| Error::<T>::NotEnoughFunds)?;
+			asset::update_stake::<T>(&self.stash, self.total)
+				.map_err(|_| Error::<T>::NotEnoughFunds)?;
 		}
 
 		Ledger::<T>::insert(
