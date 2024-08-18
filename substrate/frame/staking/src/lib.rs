@@ -314,8 +314,8 @@ use frame_support::{
 	traits::{
 		tokens::{
 			fungible::{Credit, Debt, Inspect, InspectHold},
-		Fortitude, Preservation,
-	},
+			Fortitude, Preservation,
+		},
 		ConstU32, Currency, Defensive, DefensiveMax, DefensiveSaturating, Get, LockIdentifier,
 	},
 	weights::Weight,
@@ -367,7 +367,7 @@ pub type BalanceOf<T> = <T as Config>::CurrencyBalance;
 
 type PositiveImbalanceOf<T> = Debt<<T as frame_system::Config>::AccountId, <T as Config>::Fungible>;
 pub type NegativeImbalanceOf<T> =
-Credit<<T as frame_system::Config>::AccountId, <T as Config>::Fungible>;
+	Credit<<T as frame_system::Config>::AccountId, <T as Config>::Fungible>;
 
 type AccountIdLookupOf<T> = <<T as frame_system::Config>::Lookup as StaticLookup>::Source;
 

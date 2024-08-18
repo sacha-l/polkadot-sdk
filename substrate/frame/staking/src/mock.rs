@@ -814,7 +814,7 @@ pub(crate) fn bond_extra_no_checks(stash: &AccountId, amount: Balance) {
 	let mut ledger = Ledger::<Test>::get(&controller).expect("ledger must exist to bond_extra");
 
 	let new_total = ledger.total + amount;
-	Balances::set_lock(crate::STAKING_ID, stash, new_total, WithdrawReasons::all());
+	let _ = asset::update_stake::<Test>(stash, new_total);
 	ledger.total = new_total;
 	ledger.active = new_total;
 	Ledger::<Test>::insert(controller, ledger);
