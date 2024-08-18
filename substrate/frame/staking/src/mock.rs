@@ -578,7 +578,7 @@ pub(crate) fn current_era() -> EraIndex {
 }
 
 pub(crate) fn bond(who: AccountId, val: Balance) {
-	let _ = Balances::make_free_balance_be(&who, val);
+	let _ = asset::set_balance::<Test>(&who, val);
 	assert_ok!(Staking::bond(RuntimeOrigin::signed(who), val, RewardDestination::Stash));
 }
 
@@ -823,10 +823,10 @@ pub(crate) fn bond_extra_no_checks(stash: &AccountId, amount: Balance) {
 pub(crate) fn setup_double_bonded_ledgers() {
 	let init_ledgers = Ledger::<Test>::iter().count();
 
-	let _ = Balances::make_free_balance_be(&333, 2000);
-	let _ = Balances::make_free_balance_be(&444, 2000);
-	let _ = Balances::make_free_balance_be(&555, 2000);
-	let _ = Balances::make_free_balance_be(&777, 2000);
+	let _ = asset::set_balance::<Test>(&333, 2000);
+	let _ = asset::set_balance::<Test>(&444, 2000);
+	let _ = asset::set_balance::<Test>(&555, 2000);
+	let _ = asset::set_balance::<Test>(&777, 2000);
 
 	assert_ok!(Staking::bond(RuntimeOrigin::signed(333), 10, RewardDestination::Staked));
 	assert_ok!(Staking::bond(RuntimeOrigin::signed(444), 20, RewardDestination::Staked));
@@ -928,5 +928,5 @@ pub(crate) fn staking_events_since_last_call() -> Vec<crate::Event<Test>> {
 }
 
 pub(crate) fn balances(who: &AccountId) -> (Balance, Balance) {
-	(Balances::free_balance(who), Balances::reserved_balance(who))
+	(asset::free_balance::<Test>(who), Balances::reserved_balance(who))
 }

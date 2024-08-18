@@ -4,9 +4,9 @@ use frame_support::traits::{
 	fungible::{
 		hold::{Balanced as FunHoldBalanced, Inspect as FunHoldInspect, Mutate as FunHoldMutate},
 		Balanced, Inspect as FunInspect, Mutate as FunMutate,
-	}, Imbalance,
-	tokens::Precision,
-	Currency, InspectLockableCurrency, LockableCurrency,
+	},
+	tokens::{Fortitude, Precision},
+	Currency, Imbalance, InspectLockableCurrency, LockableCurrency,
 };
 use sp_runtime::{traits::Zero, DispatchResult};
 
@@ -23,7 +23,10 @@ pub fn total_issuance<T: Config>() -> BalanceOf<T> {
 
 /// Make total balance equal to value.
 pub fn set_balance<T: Config>(who: &T::AccountId, value: BalanceOf<T>) {
-	T::Fungible::set_balance(who, value - T::Fungible::total_balance_on_hold(who));
+	let reserved_balance = T::Fungible::total_balance_on_hold(who);
+	if reserved_balance < value {
+		let _ = T::Fungible::set_balance(who, value - reserved_balance);
+	}
 }
 
 pub fn burn<T: Config>(amount: BalanceOf<T>) -> PositiveImbalanceOf<T> {
