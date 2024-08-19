@@ -23,10 +23,16 @@ pub fn total_issuance<T: Config>() -> BalanceOf<T> {
 
 /// Make total balance equal to value.
 pub fn set_balance<T: Config>(who: &T::AccountId, value: BalanceOf<T>) {
-	let reserved_balance = T::Fungible::total_balance_on_hold(who);
+	let reserved_balance = staked::<T>(who);
 	if reserved_balance < value {
 		let _ = T::Fungible::set_balance(who, value - reserved_balance);
+	} else {
+		update_stake::<T>(who, value).expect("can remove from what is staked");
+		// burn all free
+		let _ = T::Fungible::set_balance(who, Zero::zero());
 	}
+
+	assert!(total_balance::<T>(who) == value);
 }
 
 pub fn burn<T: Config>(amount: BalanceOf<T>) -> PositiveImbalanceOf<T> {

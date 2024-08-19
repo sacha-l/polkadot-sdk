@@ -2340,7 +2340,18 @@ fn reward_validator_slashing_validator_does_not_overflow() {
 		assert_ok!(Staking::payout_stakers_by_page(RuntimeOrigin::signed(1337), 11, 0, 0));
 		assert_eq!(asset::total_balance::<Test>(&11), stake * 2);
 
-		// Set staker
+		// ensure ledger has `stake` and no more.
+		Ledger::<Test>::insert(
+			11,
+			StakingLedgerInspect {
+				stash: 11,
+				total: stake,
+				active: stake,
+				unlocking: Default::default(),
+				legacy_claimed_rewards: bounded_vec![1],
+			},
+		);
+		// Set staker (unsafe, can reduce balance below actual stake)
 		let _ = asset::set_balance::<Test>(&11, stake);
 		let _ = asset::set_balance::<Test>(&2, stake);
 
