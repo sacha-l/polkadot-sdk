@@ -745,7 +745,7 @@ pub enum Instruction<Call> {
 	/// Kind: *Command*
 	///
 	/// Errors: None.
-	SetAssetClaimer {location: Location},
+	SetAssetClaimer { location: Location },
 	
 	/// Create some assets which are being held on behalf of the origin.
 	///
