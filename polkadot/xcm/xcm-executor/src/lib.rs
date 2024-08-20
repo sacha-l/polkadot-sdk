@@ -84,7 +84,7 @@ pub struct XcmExecutor<Config: config::Config> {
 	transact_status: MaybeErrorCode,
 	fees_mode: FeesMode,
 	_config: PhantomData<Config>,
-	assetClaimer: Option<Location>,
+	asset_claimer: Option<Location>,
 }
 
 #[cfg(feature = "runtime-benchmarks")]
@@ -1009,7 +1009,7 @@ impl<Config: config::Config> XcmExecutor<Config> {
 				Ok(())
 			},
 			SetAssetClaimer { location } => {
-				self.assetClaimer = Some(location);
+				self.asset_claimer = Some(location);
 				Ok(())
 			},
 			ClaimAsset { assets, ticket } => {
