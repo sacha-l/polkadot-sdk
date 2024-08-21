@@ -18,6 +18,7 @@ workspace = true
 targets = ["x86_64-unknown-linux-gnu"]
 
 [dependencies]
+alloy-core = { workspace = true, features = ["rlp"] }
 paste = { workspace = true }
 polkavm = { version = "0.10.0", default-features = false }
 bitflags = { workspace = true }
@@ -30,7 +31,7 @@ log = { workspace = true }
 serde = { optional = true, features = ["derive"], workspace = true, default-features = true }
 impl-trait-for-tuples = { workspace = true }
 
-# Substrate Dependencies
+# Polkadot-SDK Dependencies
 environmental = { workspace = true }
 frame-benchmarking = { optional = true, workspace = true }
 frame-support = { workspace = true }
@@ -51,13 +52,9 @@ xcm-builder = { workspace = true }
 array-bytes = { workspace = true, default-features = true }
 assert_matches = { workspace = true }
 pretty_assertions = { workspace = true }
-wat = { workspace = true }
 pallet-revive-fixtures = { workspace = true, default-features = true }
 
-# Polkadot Dependencies
-xcm-builder = { workspace = true, default-features = true }
-
-# Substrate Dependencies
+# Polkadot-SDK Dependencies
 pallet-balances = { workspace = true, default-features = true }
 pallet-timestamp = { workspace = true, default-features = true }
 pallet-message-queue = { workspace = true, default-features = true }
@@ -67,6 +64,7 @@ pallet-proxy = { workspace = true, default-features = true }
 sp-keystore = { workspace = true, default-features = true }
 sp-tracing = { workspace = true, default-features = true }
 
+
 [features]
 default = ["std"]
 # enabling this feature will require having a riscv toolchain installed
@@ -74,6 +72,7 @@ default = ["std"]
 # apart from this the pallet will stay functional
 riscv = ["pallet-revive-fixtures/riscv"]
 std = [
+	"alloy-core/std",
 	"codec/std",
 	"environmental/std",
 	"frame-benchmarking?/std",
