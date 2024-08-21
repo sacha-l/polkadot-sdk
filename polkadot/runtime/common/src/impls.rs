@@ -152,13 +152,15 @@ impl TryConvert<VersionedLocatableAsset, xcm_builder::LocatableAssetId>
 	) -> Result<xcm_builder::LocatableAssetId, VersionedLocatableAsset> {
 		match asset {
 			VersionedLocatableAsset::V3 { location, asset_id } => {
-				let v4_location: xcm::v4::Location = location.try_into().map_err(|_| asset.clone())?;
-				let v4_asset_id: xcm::v4::AssetId = asset_id.try_into().map_err(|_| asset.clone())?;
+				let v4_location: xcm::v4::Location =
+					location.try_into().map_err(|_| asset.clone())?;
+				let v4_asset_id: xcm::v4::AssetId =
+					asset_id.try_into().map_err(|_| asset.clone())?;
 				Ok(xcm_builder::LocatableAssetId {
 					location: v4_location.try_into().map_err(|_| asset.clone())?,
 					asset_id: v4_asset_id.try_into().map_err(|_| asset.clone())?,
 				})
-			}
+			},
 			VersionedLocatableAsset::V4 { ref location, ref asset_id } =>
 				Ok(xcm_builder::LocatableAssetId {
 					location: location.clone().try_into().map_err(|_| asset.clone())?,
@@ -237,13 +239,13 @@ pub mod benchmarks {
 	pub struct AssetRateArguments;
 	impl AssetKindFactory<VersionedLocatableAsset> for AssetRateArguments {
 		fn create_asset_kind(seed: u32) -> VersionedLocatableAsset {
-			VersionedLocatableAsset::V4 {
-				location: xcm::v4::Location::new(0, [xcm::v4::Junction::Parachain(seed)]),
-				asset_id: xcm::v4::Location::new(
+			VersionedLocatableAsset::V5 {
+				location: xcm::v5::Location::new(0, [xcm::v5::Junction::Parachain(seed)]),
+				asset_id: xcm::v5::Location::new(
 					0,
 					[
-						xcm::v4::Junction::PalletInstance(seed.try_into().unwrap()),
-						xcm::v4::Junction::GeneralIndex(seed.into()),
+						xcm::v5::Junction::PalletInstance(seed.try_into().unwrap()),
+						xcm::v5::Junction::GeneralIndex(seed.into()),
 					],
 				)
 				.into(),
@@ -278,9 +280,9 @@ pub mod benchmarks {
 			}
 		}
 		fn create_beneficiary(seed: [u8; 32]) -> VersionedLocation {
-			VersionedLocation::V4(xcm::v4::Location::new(
+			VersionedLocation::V5(xcm::v5::Location::new(
 				0,
-				[xcm::v4::Junction::AccountId32 { network: None, id: seed }],
+				[xcm::v5::Junction::AccountId32 { network: None, id: seed }],
 			))
 		}
 	}
