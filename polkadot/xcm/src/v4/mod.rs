@@ -1367,7 +1367,7 @@ impl<Call> TryFrom<NewInstruction<Call>> for Instruction<Call> {
 			SetErrorHandler(xcm) => Self::SetErrorHandler(xcm.try_into()?),
 			SetAppendix(xcm) => Self::SetAppendix(xcm.try_into()?),
 			ClearError => Self::ClearError,
-			SetAssetClaimer { location } => {
+			SetAssetClaimer { location: _ } => {
 				return Err(());
 			},
 			ClaimAsset { assets, ticket } => {
