@@ -660,7 +660,7 @@ where
 		Proposer: ProposerInterface<Block> + Send + Sync + 'static,
 		CS: CollatorServiceInterface<Block> + Send + Sync + Clone + 'static,
 	{
-		let (collation_future, block_builder_future) =
+		let (collation_future, block_builder_future, signal_task_future) =
 			slot_based::run::<Block, <AuraId as AppCrypto>::Pair, _, _, _, _, _, _, _, _>(params);
 
 		task_manager.spawn_essential_handle().spawn(
@@ -670,6 +670,11 @@ where
 		);
 		task_manager.spawn_essential_handle().spawn(
 			"block-builder-task",
+			Some("parachain-block-authoring"),
+			block_builder_future,
+		);
+		task_manager.spawn_essential_handle().spawn(
+			"signal-task",
 			Some("parachain-block-authoring"),
 			block_builder_future,
 		);
